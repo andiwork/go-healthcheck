@@ -24,18 +24,22 @@ func InitChecker() AndictlCheckerConfig {
 	config.AddCheck(health.WithTimeout(10 * time.Second))
 	// A check configuration to see if our database connection is up.
 	// The check function will be executed for each HTTP request.
-
-	config.AddCheck(health.WithCheck(health.Check{
-		Name:    "goroutine-threshold", // A unique check name.
-		Timeout: 2 * time.Second,       // A check specific timeout.
-		Check:   GoroutineCountCheck(100),
-	}))
 	// Set a status listener that will be invoked when the health status changes.
 	// More powerful hooks are also available (see docs).
 	config.AddCheck(health.WithStatusListener(func(ctx context.Context, state health.CheckerState) {
 		log.Println(fmt.Sprintf("health status changed to %s", state.Status))
 	}))
 	return config
+}
+
+func (c *AndictlCheckerConfig) AddGoroutineCountCheck(threshold int) {
+	check := health.WithCheck(health.Check{
+		Name:    "goroutine-threshold", // A unique check name.
+		Timeout: 2 * time.Second,       // A check specific timeout.
+		Check:   GoroutineCountCheck(threshold),
+	})
+	fmt.Println("Check GoroutineCountCheck threshold: ", threshold)
+	c.AddCheck(check)
 }
 
 func (c *AndictlCheckerConfig) AddCheck(check health.CheckerOption) {
